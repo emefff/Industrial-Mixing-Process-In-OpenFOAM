@@ -1,2 +1,2 @@
 # Industrial-Mixing-Process-In-OpenFOAM
-Well, in the 
+Well, in the "About" it says 'simple', but anyone involved in CFD knows, that even this example is not that simple in CFD. The basic outline is: we want to mix a fluid with two different temperatures in a vessel. Sounds simple, but in OpenFOAM we have to use at least compressibleInterFoam for this task. Compressible solvers have their own caveats, as you CFD aficionados know. They are inherently difficult, if for example a boundary condition is no defined well. It is very easy to arrive at a situation where solving the problem takes 'forever', that is, it need a very small timeStep to converge. 
