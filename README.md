@@ -15,5 +15,14 @@ Now, let's take a look at our simulation domain. The tank is 3m high with a diam
 |  16.1         | (0 0 0)       |
 |  21.          | (0 0 0)       |
 
-Essentially, from 1 to 6s we fill in hot water and also from 11 to 16s. In the first step we obviously also have to fill the pipe, so hot water does not flow into the vessel for a few seconds. The we switch off the flow and turn it on again at 11s. Both times we use a ramp of 1s on turn-on. 
+Essentially, from 1 to 6s we fill in hot water and also from 11 to 16s. In the first step we obviously also have to fill the pipe, so hot water does not flow into the vessel for a few seconds. The we switch off the flow and turn it on again at 11s. Both times we use a ramp of 1s on turn-on. The first part of the simulation is finished at 21s. 
+Then we have to prepare our next part, which will be draining the vessel from 21 to 30s with a velocity profile on the runoff pipe like this:
+
+| time / s      | velocity / m/s|
+| ------------- | ------------- |
+|  21.0         | (0 0 0)       |
+|  21.1         | (-0.1 0 0)    |
+|  21.5         | (-2 0 0)      |
+|  29.0         | (-2 0 0)      |
+|  30.0         | (-0.1 0 0)    |
 
