@@ -26,3 +26,8 @@ Then we have to prepare our next part, which will be draining the vessel from 21
 |  29.0         | (-2 0 0)      |
 |  30.0         | (-0.1 0 0)    |
 
+Before we start the second part, we have to prepare a second folder (for safety) and do a 'reconstructPar -latestTime' on our data from step 1 and copy the folders system/ constant/ and $latestTime/ to the newly created folder.
+We will perform our second simulation in this folder by just launching the above shared script. Its main purpose is to change the boundary conditions on inlet, outlet_air (that's the blowoff stub on top) and outlet_water. As mentioned, outlet_water now really becomes an outlet for draining the vessel with above velocity profile. The inlet becomes a wall now. 
+
+
+
