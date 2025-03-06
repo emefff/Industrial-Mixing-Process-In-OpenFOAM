@@ -5,7 +5,7 @@ Now, let's take a look at our simulation domain. The tank is 3m high with a diam
 ![vessel](https://github.com/user-attachments/assets/e3de5843-080d-4418-a9a2-c4592a9586f4)
 
 
-Unfortunately, we don't have a valve like boundary condition which we could switch on or off (setting U=0 creates its own problems), so we have to split a simulation into two parts if we want to empty the vessel in a second step. In the first part we will fill some hot water into the already 40% (or so) filled tank in two steps. The velocity profile of the filling pipe looks like this:
+Unfortunately, we don't have a valve like boundary condition which we could switch on or off (setting U=0 creates its own problems), so we have to split a simulation into two parts, if we want to empty the vessel in a second step. In the first part we will fill some hot water into the already 40% (or so) filled tank in two steps. The velocity profile of the filling pipe looks like this:
 
 | time / s      | velocity / m/s|
 | ------------- | ------------- |
@@ -19,7 +19,13 @@ Unfortunately, we don't have a valve like boundary condition which we could swit
 |  16.1         | (0 0 0)       |
 |  21.          | (0 0 0)       |
 
-Essentially, from 1 to 6s we fill in hot water and also from 11 to 16s. In the first step we obviously also have to fill the pipe, so hot water does not flow into the vessel for a few seconds. The we switch off the flow and turn it on again at 11s. Both times we use a ramp of 1s on turn-on which leads to a more docile behavior of the compressible solver. The first part of the simulation is finished at 21s. 
+Essentially, from 1 to 6s we fill in hot water and also from 11 to 16s. In the first step we obviously also have to fill the pipe, so hot water does not flow into the vessel for a few seconds (more clearly in the video). The we switch off the flow and turn it on again at 11s. Both times we use a ramp of 1s on turn-on which leads to a more docile behavior of the compressible solver. The first part of the simulation is finished at 21s. 
+Let's take a look at an intermediate result at 15s. The scalar clip of alpha.water shows all the water in the domain. The clip is colored with temperature (hot water = yellow, cold water = purple):
+
+![t15s_Umag_Tclip](https://github.com/user-attachments/assets/20f18bc2-8d1f-41df-ab67-f2860c6c47e0)
+
+The filling via the pipe is nearly finished at 15s (finish = 16s). Clearly, a layer of mixed hot and cold water has developed. There's also a slice in the image, showing the velocity U. As the clip covers the slice in the regions where we have water, only the U of the air is visible. Just before the falling water you'll notice the air getting pushed downward, this also more clearly in the shared, where we see tiny waves develop at the water level in the vessel. 
+
 Then we have to prepare our next part which will be draining the vessel from 21 to 30s with a velocity profile on the runoff pipe like this:
 
 | time / s      | velocity / m/s|
@@ -31,7 +37,10 @@ Then we have to prepare our next part which will be draining the vessel from 21 
 |  30.0         | (-0.1 0 0)    |
 
 Before we start the second part, we have to prepare a second folder (for safety) and do a 'reconstructPar -latestTime' on our data from step 1 and copy the folders system/ constant/ and $latestTime/ to the newly created folder.
-We will perform our second simulation in this folder by just launching the above shared script. Its main purpose is to change the boundary conditions on inlet, outlet_air (that's the blowoff stub on top) and outlet_water. As mentioned, outlet_water now really becomes an outlet for draining the vessel with above velocity profile. The inlet becomes a wall now. 
+We will perform our second simulation in this folder by just launching the above shared script. Its main purpose is to change the boundary conditions on inlet, outlet_air (that's the blowoff stub on top) and outlet_water. As mentioned, outlet_water now really becomes an outlet for draining the vessel with above velocity profile. The inlet becomes a wall now. Let's take a look at a later result showing the same data when the tank is nearly drained:
+
+![t29s_Umag_Tclip](https://github.com/user-attachments/assets/6da99669-57e9-4f08-8fc4-7304249837c4)
+
 
 
 
