@@ -1,0 +1,150 @@
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+. ${WM_PROJECT_DIR:?}/bin/tools/RunFunctions        # Tutorial run functions
+#------------------------------------------------------------------------------
+
+endTime=$(foamDictionary -value -entry endTime system/controlDict 2>/dev/null)
+
+echo "Is the controlDict up-to-date, also the functions??"
+echo ""
+echo "endTime is $endTime, is this correct? If not interrupt this script...."
+echo "If correct, wait 10s......."
+echo ""
+sleep 10
+
+#reconstructPar -latestTime 
+# is in the other ./Allrun-parallel we don't need it here
+
+# rm -r processor*
+
+LATEST_TIME=$(foamListTimes -withZero -latestTime | tail -n 1)
+
+echo "Latest time = $LATEST_TIME"
+echo ""
+
+echo "We check the boundary conditions that are to be changed:"
+foamDictionary constant/polyMesh/boundary -entry entry0.outlet_water.type -value
+echo ""
+foamDictionary ${LATEST_TIME}/p_rgh -entry boundaryField.outlet_water -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/p -entry boundaryField.outlet_water -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/U -entry boundaryField.outlet_water -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/alpha.water -entry boundaryField.outlet_water -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/T -entry boundaryField.outlet_water -value | grep -C 2 type
+sleep 10
+echo "##############################################################################################"
+foamDictionary constant/polyMesh/boundary -entry entry0.outlet_air.type -value
+echo ""
+foamDictionary ${LATEST_TIME}/p_rgh -entry boundaryField.outlet_air -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/p -entry boundaryField.outlet_air -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/U -entry boundaryField.outlet_air -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/alpha.water -entry boundaryField.outlet_air -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/T -entry boundaryField.outlet_air -value | grep -C 2 type
+sleep 10
+echo "##############################################################################################"
+foamDictionary constant/polyMesh/boundary -entry entry0.inlet.type -value
+echo ""
+foamDictionary ${LATEST_TIME}/p_rgh -entry boundaryField.inlet -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/p -entry boundaryField.inlet -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/U -entry boundaryField.inlet -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/alpha.water -entry boundaryField.inlet -value | grep -C 2 type
+echo ""
+foamDictionary ${LATEST_TIME}/T -entry boundaryField.inlet -value | grep -C 2 type
+
+echo "Sleeping 10s.....before changing anything......you have to be sure....."
+sleep 10
+
+#######################################################################################################
+
+# Patch type 
+foamDictionary constant/polyMesh/boundary -entry entry0.outlet_water.type -set "patch" || exit 1
+# pressure_rgh
+#foamDictionary ${LATEST_TIME}/p_rgh -entry boundaryField.outlet_water -set "{type totalPressure; p0 uniform 82315;}" || exit 1
+foamDictionary ${LATEST_TIME}/p_rgh -entry boundaryField.outlet_water -set "{type        fixedFluxPressure;value       uniform 0.5e5;}" || exit 1
+# pressure 
+foamDictionary ${LATEST_TIME}/p -entry boundaryField.outlet_water -set "{type fixedValue; value  uniform 0.5e5;}" || exit 1
+# velocity
+#foamDictionary ${LATEST_TIME}/U -entry boundaryField.outlet_water -set "{type pressureInletOutletVelocity; value uniform (0 0 0);}" || exit 1
+foamDictionary ${LATEST_TIME}/U -entry boundaryField.outlet_water -set "{type uniformFixedValue;
+        uniformValue table       
+        (       
+        (21    (0 0 0))
+        (21.1  (-0.1 0 0))
+        (21.5  (-2 0 0))
+        (29    (-2 0 0))
+        (30   (-0.1 0 0))
+        );}" || exit 1
+# alpha
+# foamDictionary ${LATEST_TIME}/alpha.water -entry boundaryField.outlet_water -set "{type inletOutlet; inletValue uniform 1; value uniform 1;}" || exit 1
+foamDictionary ${LATEST_TIME}/alpha.water -entry boundaryField.outlet_water -set "{type zeroGradient;}" || exit 1
+# temperature (not needed, is the same!)
+foamDictionary ${LATEST_TIME}/T -entry boundaryField.outlet_water -set "{type zeroGradient;}" || exit 1
+
+# Patch type 
+foamDictionary constant/polyMesh/boundary -entry entry0.outlet_air.type -set "patch" || exit 1
+# pressure_rgh
+foamDictionary ${LATEST_TIME}/p_rgh -entry boundaryField.outlet_air -set "{type totalPressure; p0 uniform 1e5;}" || exit 1
+# pressure 
+foamDictionary ${LATEST_TIME}/p -entry boundaryField.outlet_air -set "{type fixedValue; value  uniform 1e5;}" || exit 1
+# velocity
+foamDictionary ${LATEST_TIME}/U -entry boundaryField.outlet_air -set "{type pressureInletOutletVelocity; value uniform (0 0 0);}" || exit 1
+# alpha
+foamDictionary ${LATEST_TIME}/alpha.water -entry boundaryField.outlet_air -set "{type zeroGradient;}" || exit 1
+# temperature
+foamDictionary ${LATEST_TIME}/T -entry boundaryField.outlet_air -set "{type zeroGradient;}" || exit 1
+
+# Patch type 
+foamDictionary constant/polyMesh/boundary -entry entry0.inlet.type -set "wall" || exit 1
+# pressure_rgh
+foamDictionary ${LATEST_TIME}/p_rgh -entry boundaryField.inlet -set "{type fixedFluxPressure; value uniform 1e5;}" || exit 1
+# pressure 
+foamDictionary ${LATEST_TIME}/p -entry boundaryField.inlet -set "{type calculated; value uniform 1.30647e5;}" || exit 1
+# velocity
+foamDictionary ${LATEST_TIME}/U -entry boundaryField.inlet -set "{type slip;}" || exit 1
+# alpha
+foamDictionary ${LATEST_TIME}/alpha.water -entry boundaryField.inlet -set "{type zeroGradient;}" || exit 1
+# temperature
+foamDictionary ${LATEST_TIME}/T -entry boundaryField.inlet -set "{type zeroGradient;}" || exit 1
+
+echo "All changes have been applied.............restarting simulation from $LATEST_TIME..."
+echo ""
+
+deltaT=$(foamDictionary -value -entry deltaT system/controlDict 2>/dev/null)
+maxCo=$(foamDictionary -value -entry maxCo system/controlDict 2>/dev/null)
+endTime=$(foamDictionary -value -entry endTime system/controlDict 2>/dev/null)
+writeInterval=$(foamDictionary -value -entry writeInterval system/controlDict 2>/dev/null)
+
+echo "###### deltaT = $deltaT"
+echo "###### maxCo = $maxCo"
+echo "###### endTime = $endTime"
+echo "###### writeInterval = $writeInterval"
+echo "###########################################################"
+echo ""
+echo "Applying a smaller maxCo for the restart..."
+echo "You may use the Auto-increase-maxCo-writeInterval script again........"
+
+maxCoStart=$( echo "0.0001" | bc -l | sed -e 's/^\./0./')
+
+sed -i "s/maxCo           $maxCo;/maxCo           $maxCoStart;/" system/controlDict
+echo "###### auto-resetting maxCo to $maxCoStart"
+sleep 0.1
+maxCo=$(foamDictionary -value -entry maxCo system/controlDict 2>/dev/null)
+sleep 0.1
+echo "###### maxCoStart = $maxCo"
+echo ""
+
+#decomposePar -time 0:$LATEST_TIME # would write all timeSteps until $LATEST_TIME BUT:
+decomposePar -latestTime -force # only does the last 
+
+mpirun -np 24 compressibleInterFoam -parallel
+
